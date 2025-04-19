@@ -38,6 +38,7 @@
             margin: 10px;
             flex: 1 1 25%;
             transition: transform 0.3s ease;
+            text-align: center;
         }
         .card:hover {
             transform: translateY(-10px);
@@ -45,10 +46,13 @@
         .card h3 {
             font-size: 24px;
             margin-bottom: 10px;
+            font-weight: 500;
         }
         .card p {
-            font-size: 18px;
+            font-size: 20px;
             color: #7f8c8d;
+            margin: 10px 0;
+            font-weight: 700;
         }
 
         /* Chart Container */
@@ -59,6 +63,12 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 10px;
             flex: 1 1 48%;
+            text-align: center;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+            height: auto;
         }
 
         /* Responsive Design */
@@ -80,19 +90,19 @@
         <div class="row">
             <div class="card">
                 <h3>Water Flow</h3>
-                <p id="water-flow">Loading...</p>
+                <p id="water-flow">20 units</p>
             </div>
             <div class="card">
                 <h3>Electricity Usage</h3>
-                <p id="electricity-usage">Loading...</p>
+                <p id="electricity-usage">300 kWh</p>
             </div>
             <div class="card">
                 <h3>Vehicle Count</h3>
-                <p id="vehicle-count">Loading...</p>
+                <p id="vehicle-count">150 vehicles</p>
             </div>
             <div class="card">
                 <h3>Waste Bin Level</h3>
-                <p id="waste-bin-level">Loading...</p>
+                <p id="waste-bin-level">60% full</p>
             </div>
         </div>
 
@@ -109,57 +119,59 @@
     </div>
 
     <script>
-        // Fetching Data (Dummy Data for Now)
-        async function fetchData(url) {
-            const response = await fetch(url);
-            return response.json();
+        // Function to generate random values
+        function getRandomValue(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        // Fetch and display random data for now
         function updateRealtimeData() {
-            fetchData('/data/realtime')
-                .then(data => {
-                    document.getElementById('water-flow').textContent = data.water_flow + " units";
-                    document.getElementById('electricity-usage').textContent = data.electricity_usage + " kWh";
-                    document.getElementById('vehicle-count').textContent = data.vehicle_count + " vehicles";
-                    document.getElementById('waste-bin-level').textContent = data.waste_bin_level + " % full";
-                });
+            document.getElementById('water-flow').textContent = getRandomValue(10, 50) + " units";
+            document.getElementById('electricity-usage').textContent = getRandomValue(100, 1000) + " kWh";
+            document.getElementById('vehicle-count').textContent = getRandomValue(50, 200) + " vehicles";
+            document.getElementById('waste-bin-level').textContent = getRandomValue(0, 100) + "% full";
         }
 
+        // Update prediction data (randomized for now)
         function updatePredictionData() {
-            fetchData('/data/predictions')
-                .then(data => {
-                    // Traffic Chart
-                    new Chart(document.getElementById('trafficChart'), {
-                        type: 'line',
-                        data: {
-                            labels: ['Now', '1 Hour', '2 Hours', '3 Hours'],
-                            datasets: [{
-                                label: 'Predicted Vehicles',
-                                data: [50, data.traffic_prediction, data.traffic_prediction * 1.1, data.traffic_prediction * 0.9], // Simulated data
-                                borderColor: '#3498db',
-                                fill: false
-                            }]
-                        },
-                        options: { responsive: true }
-                    });
+            const trafficPrediction = getRandomValue(40, 180);
+            const wasteCategoryCounts = {
+                "plastic": getRandomValue(20, 50),
+                "metal": getRandomValue(10, 30),
+                "organic": getRandomValue(30, 60)
+            };
 
-                    // Waste Category Chart
-                    new Chart(document.getElementById('wasteChart'), {
-                        type: 'bar',
-                        data: {
-                            labels: Object.keys(data.waste_category_counts),
-                            datasets: [{
-                                label: 'Waste Categories',
-                                data: Object.values(data.waste_category_counts),
-                                backgroundColor: ['#FF5733', '#239B56', '#3498DB']
-                            }]
-                        },
-                        options: { responsive: true }
-                    });
-                });
+            // Traffic Chart
+            new Chart(document.getElementById('trafficChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Now', '1 Hour', '2 Hours', '3 Hours'],
+                    datasets: [{
+                        label: 'Predicted Vehicles',
+                        data: [getRandomValue(50, 100), trafficPrediction, trafficPrediction * 1.1, trafficPrediction * 0.9], // Simulated data
+                        borderColor: '#3498db',
+                        fill: false
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // Waste Category Chart
+            new Chart(document.getElementById('wasteChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(wasteCategoryCounts),
+                    datasets: [{
+                        label: 'Waste Categories',
+                        data: Object.values(wasteCategoryCounts),
+                        backgroundColor: ['#FF5733', '#239B56', '#3498DB']
+                    }]
+                },
+                options: { responsive: true }
+            });
         }
 
-        // Initial Load and Updates
+        // Initial Load and Periodic Updates
         updateRealtimeData();
         updatePredictionData();
         setInterval(updateRealtimeData, 5000);  // Update every 5 seconds
